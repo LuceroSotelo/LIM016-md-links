@@ -1,4 +1,21 @@
 {
   "name": "md-links",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "description": "",
+  "dependencies": {
+    "markdown-it": "^12.3.0"
+  },
+  "eslintConfig": {},
+  "scripts": {
+    "pretest": "",
+    "test": ""
+  },
+  "main": "",
+  "bin": "",
+  "repository": {},
+  "author": {
+    "name": "Lucero Sotelo Trigos",
+    "email": "lucero.eds@gmail.com"
+  },
+  "license": ""
 }
