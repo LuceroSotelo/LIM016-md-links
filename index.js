@@ -1,18 +1,30 @@
 //Exportar funcion mdLinks   
 //mdLinks(path, options)
+
 module.exports = () => {
   // ...
 };
 
-const fs = require('fs');
-let path = require('path');
 
+//mdLinks(path01, options)
+//import fetch from 'node-fetch';
+
+const fetch = require('node-fetch');
+const fs = require('fs');
+const path = require('path');
+const md = require('markdown-it')( { 
+  html : true , 
+  linkify : true , 
+  typographer : true,
+} ) ;
+const  jsdom  =  require ( "jsdom" ) ; 
+const  {  JSDOM  }  =  jsdom ;
 const MDextension = '.md';
 
 //0. Ingreso de la ruta
-let moduleToIdentify = './README.md';
+let moduleToIdentify = './linksprueba.md';
 
-//1. La ruta existe
+//1. La ruta existe //Promesas
 const routeExists = fs.existsSync(moduleToIdentify);
 console.log(`1. The route '${moduleToIdentify}' ${routeExists ? '' : 'not'} exist`);
 //console.log(typeof routeExists);
@@ -36,18 +48,36 @@ console.log(`5. The file '${moduleToIdentify}' ${moduleToIdentify.endsWith(MDext
 
 //6. Crear un array con los archivos .md
 
-//7. Leer los archivos .md para identificar los links
-//7.1 Leyendo el contenido de los archivos .md
-console.log(`This is the content of .md file:`)
+//7. Leyendo el contenido de los archivos .md y crear un array con los links
+console.log(`7.1 This is the content of .md file convert to HTML:`)
 fs.readFile(moduleToIdentify, function (err, data){
-  let MDstring = data.toString();
    if (err){
     console.log(err);
   }
-  console.log(MDstring);
-  //verificando si el archivo .md contiene links
-  //console.log(MDstring.includes('http'));
+  const result = md.render(data.toString());
+  const dom = new JSDOM(result);
+  let array1 = dom.window.document.querySelectorAll('a');
+  console.log(Array.from(array1).toString()); 
 })
+
+
+//solicitud HTTP
+fetch('https://www.xatakandroid.com/productividad-herramientas/como-controlar-tu-movil-desde-otro-movil-con-teamviewer#:~:text=Teamviewer%20es%20una%20de%20las,%2C%20Windows%20Phone%20y%20BlackBerry).')
+.then(promesaFetch=>promesaFetch.json())
+.then(contenido=>console.log(contenido));
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //mockear
