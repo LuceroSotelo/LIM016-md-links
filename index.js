@@ -1,84 +1,165 @@
-//Exportar funcion mdLinks   
-//mdLinks(path, options)
-
-module.exports = () => {
-  // ...
-};
-
-
-//mdLinks(path01, options)
-//import fetch from 'node-fetch';
-
-const fetch = require('node-fetch');
 const fs = require('fs');
 const path = require('path');
-const md = require('markdown-it')( { 
-  html : true , 
-  linkify : true , 
-  typographer : true,
-} ) ;
-const  jsdom  =  require ( "jsdom" ) ; 
-const  {  JSDOM  }  =  jsdom ;
-const MDextension = '.md';
+const md = require('markdown-it')();
+const jsdom = require('jsdom');
+const { exit } = require('process');
+const { JSDOM } = jsdom;
 
 //0. Ingreso de la ruta
-let moduleToIdentify = './linksprueba.md';
+//let path01 = './README.md';
+let path01 = '/Users/lucero sotelo/Documents/LUCERO/LABORATORIA/LIM016/PROYECTOS/LIM016-md-links';
+//let path01 = './c_01/c_02/c_03/c_04/linksprueba.md'
 
-//1. La ruta existe //Promesas
-const routeExists = fs.existsSync(moduleToIdentify);
-console.log(`1. The route '${moduleToIdentify}' ${routeExists ? '' : 'not'} exist`);
-//console.log(typeof routeExists);
+
+//1. La ruta existe?
+const pathExist = (thisPath) => fs.existsSync(thisPath)
+console.log('1. Does the path exist?', pathExist(path01));
+
+
 
 //2. Verificar si la ruta es absoluta o no
-const routeIsAbsolute = path.isAbsolute(moduleToIdentify);
-console.log(`2. The route '${moduleToIdentify}' ${routeIsAbsolute ? 'is' : 'is not'} an absolute route`);
+const pathIsAbsolute = (thisPath) => path.isAbsolute(thisPath)
+console.log('2. Is the path absolute?', pathIsAbsolute(path01));
+
+
 
 //3. Devolver la ruta absoluta del archivo que se indica
-const routeAbsolute =  path.resolve(moduleToIdentify);
-console.log (`3. The absolute route of '${moduleToIdentify}' 'is:' ${routeAbsolute}`);
-
-//4. Verificar si la ruta es de un directorio o archivo
-const routeIsADirectory = fs.statSync(moduleToIdentify).isDirectory();
-console.log(`4. The route '${moduleToIdentify}' ${routeIsADirectory ? 'is' : 'is not'} a directory`);
-//4.1 Recursividad si la ruta es un directorio
-
-//5. Luego de obtener todos los archivos, verificamos si tienen extensión .md o no
-console.log(`5. The file '${moduleToIdentify}' ${moduleToIdentify.endsWith(MDextension) ? 'is' : 'is not'} a markdown file`);
-//5.1 No se encontraron archivos .md
-
-//6. Crear un array con los archivos .md
-
-//7. Leyendo el contenido de los archivos .md y crear un array con los links
-console.log(`7.1 This is the content of .md file convert to HTML:`)
-fs.readFile(moduleToIdentify, function (err, data){
-   if (err){
-    console.log(err);
+function convertTopathAbsolute(thisPath) {
+  if (path.isAbsolute(thisPath) === false) {
+    console.log(`3. The absolute path is ${path.resolve(thisPath)}`)
   }
-  const result = md.render(data.toString());
-  const dom = new JSDOM(result);
-  let array1 = dom.window.document.querySelectorAll('a');
-  console.log(Array.from(array1).toString()); 
-})
-
-
-//solicitud HTTP
-fetch('https://www.xatakandroid.com/productividad-herramientas/como-controlar-tu-movil-desde-otro-movil-con-teamviewer#:~:text=Teamviewer%20es%20una%20de%20las,%2C%20Windows%20Phone%20y%20BlackBerry).')
-.then(promesaFetch=>promesaFetch.json())
-.then(contenido=>console.log(contenido));
+  else {
+    console.log(`3. Is already an absolute path: `, path.resolve(thisPath))
+  }
+}
+convertTopathAbsolute(path01)
 
 
 
+//4. Verificar si la ruta es de un directorio o archivo(devuleve la extensión)
+function pathExtension(thisPath) {
+  if (fs.lstatSync(thisPath).isDirectory() !== true) {
+    const typeFile = path.parse(thisPath).ext;
+    return (`4. Is not a directory. The file extension is: '${typeFile}'`)// retorna extensión del archivo
+  } else {
+    return (console.log('4. The path is a directory:'), fs.lstatSync(thisPath).isDirectory()) // es un directorio
+  }
+}
+console.log(pathExtension(path01))
 
 
 
+//5. Devuelve el contenido del directorio
+const read_dir = (route) => fs.readdirSync(route, 'utf-8')
+console.log('5. This is the contents of the directory', read_dir(path01))
 
 
 
+// Une dos pedazos de ruta
+const join_path = (dir, base) => path.join(dir, base)
+console.log('6. This is',join_path(path01))
 
 
 
+//Función recursiva para obtener array de archivos md
+const get_mdfiles = (path) => {
+  let md_files = [];
+  if (pathExist(path)) {
+      const path_absolute = convertTopathAbsolute(path)
+      const type_file = pathExtension(path_absolute) // file or directory
+      if (type_file) { // Obs: Puede ser md, txt, jpeg, png, etc.
+          if (type_file === '.md') {
+              md_files = md_files.concat(path_absolute)
+              return md_files
+          } else {
+              return 'Solo se revisan archivos markdown'
+          }
+      } else { // Obs: Puede contener files o subdirectorios
+          const content_dir = read_dir(path_absolute)
+          content_dir.forEach((file) => {
+              const union_path = join_path(path_absolute, file)
+              const recursive_function = get_mdfiles(union_path)
+              md_files = md_files.concat(recursive_function)
+          })
+          return md_files.length !== 0 ? md_files : 'Directorio vacío'
+      }
+  } else {
+      return 'Ruta inexistente'
+  }
+}
+
+return(get_mdfiles(path01));
 
 
+//7. Leyendo el contenido de los archivos .md en html y crear un array con los links/ extraer contenido de 
+//cada href con map a.href y convertirlo en string
+
+const readAFile = function (thisPath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(thisPath, 'utf-8', (err, data) => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(md.render(data))
+      }
+    })
+  })
+}
+
+readAFile(path01)
+  .then(result => {
+    console.log(`7. This is the content of .md file in string: `, result)
+  })
+  .catch(error => {
+    console.log(`7. Han error has ocurred`, error)
+  })
+
+
+
+/*
+const readAFileLinks = function (thisPath) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(thisPath, 'utf-8', (err, data) => {
+      const fileToHTML = md.render(data);
+      const onlyLinks = new JSDOM(fileToHTML).window.document.querySelectorAll('a');
+      let linksArray = [];
+      onlyLinks.forEach( (e) => {        
+        linksArray.push({
+          href: e.toString(),
+          text: e.textContent,
+          file: thisPath
+        })
+      });
+      if (err) {
+        reject(err)
+      } else {
+        resolve(linksArray)
+      }
+    })
+  })
+}
+
+readAFileLinks(path01)
+  .then(result => {
+    console.log(`8. This is the content of .md file in string: `, result)
+  })
+  .catch(error => {
+    console.log(`8. Han error has ocurred`, error)
+  })
+
+*/
+
+
+
+module.exports = {
+  pathExist,
+  pathIsAbsolute,
+  convertTopathAbsolute,
+  pathExtension,
+  read_dir,
+  join_path,
+  get_mdfiles
+}
 
 //mockear
 
