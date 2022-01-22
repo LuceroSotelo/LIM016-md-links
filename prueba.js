@@ -35,15 +35,10 @@ function pathIsAbsolute(thisPath) {
 pathIsAbsolute(path01);
 
 //3. Devolver la ruta absoluta del archivo que se indica
-function convertTopathAbsolute(thisPath) {
-  if (path.isAbsolute(thisPath) === false) {
-    console.log(`3. The absolute path is ${path.resolve(thisPath)}`)
-  }
-  else {
-    console.log(`3. Is already an absolute path`)
-  }
-}
-convertTopathAbsolute(path01)
+const convertTopathAbsolute = (thisPath) => pathIsAbsolute(thisPath)? thisPath : path.resolve(thisPath)
+console.log('3. This is the absolute path: ', convertTopathAbsolute(path01));
+
+
 
 //4. Verificar si la ruta es de un directorio o archivo
 function pathExtension(thisPath){
@@ -211,3 +206,44 @@ console.log(__filename);
 console.log(path.basename(__filename));
 */
 
+
+
+
+
+
+
+let urls = ['https://es.wikipedia.org/wiki/Markdown', 'https://www.google.com/', 'htps://wwgoole.cm/']
+
+//Petición HTTP
+const getData = (url) => {
+  return new Promise((resolve, reject) => {
+    fetchUrl(url, (error, meta, body) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(meta.status);
+      }
+    })
+  })
+}
+
+const getStatus = (urlArray) => {
+  let statusCounter = 0;
+  for (let i = 0; i < urlArray.length; i++) {
+    getData(urlArray[i])
+      .then(res => {
+        if (res === 200) {
+          statusCounter += 1;
+          console.log('dentro del for', statusCounter);
+        }
+      })
+  }
+  return statusCounter;
+}
+
+console.log(getStatus(urls));
+
+Promise.all([Promise.resolve('first promise'), readAFile(path01), getData('https://es.wikipedia.org/wiki/Markdown')])
+  .then(res => {
+    console.log(res.length);
+  })
