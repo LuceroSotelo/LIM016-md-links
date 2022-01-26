@@ -1,7 +1,7 @@
 const readAFile = function (thisPath) {
   return new Promise((resolve, reject) => {
     fs.readFile(thisPath, 'utf-8', (err, data) => {
-      
+
       if (err) {
         reject(err)
       } else {
@@ -30,13 +30,13 @@ readAFile('./README.md')
 
 const pathIsAbsolute = (thisPath) => {
   return new Promise((resolve, reject) => {
-      if (path.isAbsolute(thisPath) === true) {
-        resolve('');
-      } else {
-        reject('');
-      }
-    });
-  }
+    if (path.isAbsolute(thisPath) === true) {
+      resolve('');
+    } else {
+      reject('');
+    }
+  });
+}
 
 pathIsAbsolute(path01)
   .then(result => {
@@ -47,13 +47,13 @@ pathIsAbsolute(path01)
   })
 
 
-  let convertTopathAbsolute = new Promise(function (resolve, reject) {
-    if (typeof path.resolve(path01) == 'string') {
-      resolve(`3. The absolute path of '${path01}' 'is:' ${path.resolve(path01)}`)
-    } else {
-      reject(`3. Could not get absolute path`)
-    }
-  })
+let convertTopathAbsolute = new Promise(function (resolve, reject) {
+  if (typeof path.resolve(path01) == 'string') {
+    resolve(`3. The absolute path of '${path01}' 'is:' ${path.resolve(path01)}`)
+  } else {
+    reject(`3. Could not get absolute path`)
+  }
+})
 convertTopathAbsolute
   .then((string) => console.log(string))
   .catch((error) => console.log(error))
