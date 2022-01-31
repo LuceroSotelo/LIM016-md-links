@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 let remarkable = new Remarkable();
 
 //0. Ingreso de la ruta
-//let path01 = './README.md';
+//let path01 = 'README.md';
 //let path01 = '/Users/lucero sotelo/Documents/LUCERO/LABORATORIA/LIM016/PROYECTOS/LIM016-md-links';
 let path01 = '/Users/lucero sotelo/Documents/LUCERO/LABORATORIA/LIM016/PROYECTOS/LIM016-md-links/c_01';
 //let path01 = './c_01/c_02/c_03/c_04/linksprueba.md'
@@ -25,7 +25,7 @@ const pathIsAbsolute = (route) => path.isAbsolute(route)
 
 //3. Devolver la ruta absoluta del archivo que se indica
 const convertTopathAbsolute = (route) => {
-  if (path.isAbsolute(route)) {
+  if (pathIsAbsolute(route)) {
     return route
   }
   return path.resolve(route)
@@ -34,17 +34,18 @@ const convertTopathAbsolute = (route) => {
 
 
 //4. Verificar si la ruta es de un directorio SI USO----------
-const pathIsDirectory = (route) => {return fs.lstatSync(route).isDirectory()} 
+const pathIsDirectory = (route) => { return fs.lstatSync(route).isDirectory() }
 //console.log('4. Is the path a directory?', pathIsDirectory(path01))
 
 
 //5. Recursividad para obtener un array de todos los archivos .md del directorio
 const getMdArr = (route) => {
   let arrFilesMd = [];
+  const pathAbsolute = convertTopathAbsolute(route);
   if (pathIsDirectory(route)) {
-    const listFiles = fs.readdirSync(route); //Listar archivos del directorio
+    const listFiles = fs.readdirSync(pathAbsolute); //Listar archivos del directorio
     listFiles.forEach((file) => {
-      const routeFiles = path.join(route, file); // Unir dos rutas fragmentadas: ruta del directorio + ruta de cada uno de los archivos
+      const routeFiles = path.join(pathAbsolute, file); // Unir dos rutas fragmentadas: ruta del directorio + ruta de cada uno de los archivos
       if (pathIsDirectory(routeFiles)) {
         arrFilesMd = arrFilesMd.concat(getMdArr(routeFiles))
       }
@@ -53,11 +54,10 @@ const getMdArr = (route) => {
       }
     })
   } else {
-    arrFilesMd.push(route)
+    arrFilesMd.push(pathAbsolute)
   }
-  return arrFilesMd
+  return arrFilesMd;
 }
-
 
 //6. Leyendo el contenido de los archivos .md en html y crear un array de objetos con los detalles de los links
 const getObjectsWithLinks = function (route) {
@@ -75,6 +75,7 @@ const getObjectsWithLinks = function (route) {
   return linksArray;
 }
 
+
 //Uniendo los arrays de objetos en un solo array
 const getArraysOfObjectsWithLinks = function (eachArr) {
   let getObjArray = [];
@@ -83,39 +84,40 @@ const getArraysOfObjectsWithLinks = function (eachArr) {
       getObjectsWithLinks(e)
     )
   })
-  return getObjArray.flat()
+  return getObjArray.flat();
 }
+
+//console.log('6. Found links: ', getArraysOfObjectsWithLinks(getMdArr(path01)) )
 
 
 //7. Petición HTTP para verificar status
+
 const statusHttp = (linksArr) => {
-  //console.log('34',linksArr);
-  let length = linksArr.length;
-  for (let i = 0; i < length; i++) {
-    fetch(linksArr[i].href)
-      .then(response => {
-        return console.log({
-          href: linksArr[i].href,
-          text: linksArr[i].text.substring(0, 50),
-          file: linksArr[i].file,
-          status: response.status,
-          ok: (response.status >= 200) && (response.status < 300) ? 'ok' : 'fail'
-        })
+  const arrLinksStatus = linksArr.map((e) =>
+    fetch(e.href)
+      .then((res) => {
+        const data = {
+          href: e.href,
+          text: e.text.substring(0, 50),
+          file: e.file,
+          status: res.status,
+          ok: (res.status >= 200) && (res.status < 300) ? 'ok' : 'fail'
+        }; return data
       })
-      .catch(err => {
-        return {
-          href: linksArr[i].href,
-          text: linksArr[i].text.substring(0, 50),
-          file: linksArr[i].file,
+      .catch((err) => {
+        const data = {
+          href: e.href,
+          text: e.text.substring(0, 50),
+          file: e.file,
           status: err.status,
           ok: 'fail'
         }
-      });
-  }
-  return Promise.all(linksArr)
+        return data;
+      }));
+  return Promise.all(arrLinksStatus);
 }
 
-statusHttp(getArraysOfObjectsWithLinks(getMdArr(convertTopathAbsolute(path01))));
+//statusHttp(getArraysOfObjectsWithLinks(getMdArr(path01))).then( res => console.log(res)).catch( err => console.log(error));
 
 
 export {
@@ -123,6 +125,9 @@ export {
   pathIsAbsolute,
   convertTopathAbsolute,
   pathIsDirectory,
+  getMdArr,
+  getArraysOfObjectsWithLinks,
+  getObjectsWithLinks,
   statusHttp
-} 
+}
 

@@ -4,6 +4,7 @@
   "type": "module",
   "description": "* [1. Preámbulo](#1-preámbulo)\r * [2. Resumen del proyecto](#2-resumen-del-proyecto)\r * [3. Objetivos de aprendizaje](#3-objetivos-de-aprendizaje)\r * [4. Consideraciones generales](#4-consideraciones-generales)\r * [5. Criterios de aceptación mínimos del proyecto](#5-criterios-de-aceptación-mínimos-del-proyecto)\r * [6. Entregables](#6-entregables)\r * [7. Hacker edition](#7-hacker-edition)\r * [8. Pistas, tips y lecturas complementarias](#8-pistas-tips-y-lecturas-complementarias)\r * [9. Checklist](#9-checklist)\r * [10. Achicando el problema](#10-achicando-el-problema)",
   "dependencies": {
+    "chalk": "^5.0.0",
     "fetch": "^1.1.0",
     "jsdom": "^19.0.0",
     "markdown-it": "^12.3.0",
@@ -14,9 +15,8 @@
   "eslintConfig": {},
   "scripts": {
     "pretest": "",
-    "test": "",
-    "build": "babel index.js -d dist",
-    "start": "babel-node index.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --verbose --coverage",
+    "build": "babel src -d src"
   },
   "main": "index.js",
   "repository": {},
@@ -25,8 +25,13 @@
   "devDependencies": {
     "@babel/cli": "^7.16.8",
     "@babel/core": "^7.16.10",
+    "@babel/plugin-transform-modules-commonjs": "^7.16.8",
     "@babel/node": "^7.16.8",
-    "@babel/preset-env": "^7.16.11"
+    "@babel/preset-env": "^7.16.11",
+    "babel-jest": "^27.4.6",
+    "jest": "^27.4.7",
+    "regenerator-runtime": "^0.13.9",
+    "eslint": "8.1.2"
   },
   "directories": {
     "test": "test"
